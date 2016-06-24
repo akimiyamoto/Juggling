@@ -33,6 +33,8 @@ class GameScene: SKScene,SKPhysicsContactDelegate {
     var Ballx2:CGFloat = 0.0
     var Ballx3:CGFloat = 0.0
     var Ballx4:CGFloat = 0.0
+    var BallMoveAmount = (10.0, 100.0, 150.0, 200.0)
+    
     let se_ball = SKAction.playSoundFileNamed("soccerball.mp3", waitForCompletion: false)
     
     override func didMoveToView(view: SKView) {
@@ -48,8 +50,7 @@ class GameScene: SKScene,SKPhysicsContactDelegate {
         motionManager.accelerometerUpdateInterval = 0.1
         self.accelerometerHandler = {(data:CMAccelerometerData?, error:NSError?) -> Void
             in
-            let x = data!.acceleration.x * 10
-            self.physicsWorld.gravity = CGVector(dx: x, dy: -9.8)
+            self.physicsWorld.gravity = CGVector(dx: data!.acceleration.x * 10, dy: -9.8)
         }
         motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()!, withHandler: accelerometerHandler!)
         CreateBall()
@@ -111,8 +112,8 @@ class GameScene: SKScene,SKPhysicsContactDelegate {
         
         self.CurrentScoreLabel = SKLabelNode(fontNamed: "Helvetica")
         self.CurrentScoreLabel.text = "0"
-        self.CurrentScoreLabel.fontSize = 48
-        self.CurrentScoreLabel.position =  CGPoint(x: self.frame.size.width / 2.0, y: self.frame.size.height*0.80)
+        self.CurrentScoreLabel.fontSize = 64
+        self.CurrentScoreLabel.position =  CGPoint(x: self.frame.size.width / 2.0, y: self.frame.size.height - 120)
         self.CurrentScoreLabel.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         self.CurrentScoreLabel.fontColor = UIColor.whiteColor()
         self.addChild(self.CurrentScoreLabel)
@@ -139,15 +140,15 @@ class GameScene: SKScene,SKPhysicsContactDelegate {
     func CreateBall(){
         
         let ballTexture = SKTexture(imageNamed: "ball")
+        ballTexture.filteringMode = .Nearest
         self.ball = SKSpriteNode(texture: ballTexture)
         self.ball!.physicsBody = SKPhysicsBody(texture: ballTexture, size: ball!.size)
-        
         self.ball!.physicsBody?.dynamic = true
+        self.ball!.physicsBody?.allowsRotation = true
         self.ball!.physicsBody?.restitution = 0.6
         self.ball!.physicsBody?.mass = 0.430 // m = 430g
         self.ball!.position = CGPoint(x: self.frame.size.width / 2 , y: self.frame.size.height)
         self.ball!.physicsBody?.collisionBitMask = 0x1 << 1
-        self.ball!.physicsBody?.allowsRotation = true
         self.ball!.zPosition = 10
         self.addChild(self.ball!)
         
@@ -163,21 +164,20 @@ class GameScene: SKScene,SKPhysicsContactDelegate {
         let ballHeight = self.ball!.size.height
         for touch : UITouch in touches{
             
-            let tpoint = touch.locationInNode(self)
-            var xpower:Double = 0.0
-            
+            let tpoint = touch.locationInNode(self)            
             if tpoint.y < (self.ball!.position.y + (ballHeight / 2.0)) {
                 if tpoint.y > (self.ball!.position.y - (ballHeight / 2.0))
                 {
+                    var xpower:Double = 0.0
                     let xpo = abs(tpoint.x - self.ball!.position.x)
                     if(xpo < self.Ballx1){
-                        xpower = 10
+                        xpower = BallMoveAmount.0
                     }else if (xpo < self.Ballx2) {
-                        xpower = 100
+                        xpower = BallMoveAmount.1
                     }else if (xpo < self.Ballx3) {
-                        xpower = 150
+                        xpower = BallMoveAmount.2
                     }else if (xpo < self.Ballx4) {
-                        xpower = 200
+                        xpower = BallMoveAmount.3
                     }else{
                         return
                     }
